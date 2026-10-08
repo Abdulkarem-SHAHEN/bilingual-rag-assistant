@@ -23,6 +23,7 @@ project's own documentation.
 
 - [Features](#features)
 - [How it works](#how-it-works)
+- [Guardrails](#guardrails)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
 - [Installation](#installation)
@@ -46,8 +47,8 @@ project's own documentation.
 - **Conversation memory** — the last 8 messages are sent with each question, so follow-up questions
   work.
 - **Streaming chat interface** — answers appear token by token in a Streamlit chat UI.
-- **Prompt-injection guard** — retrieved text is passed to the model as untrusted reference
-  material, with an explicit rule never to follow instructions found inside it.
+- **Guardrails** — the assistant stays grounded in the documents, treats retrieved text as
+  untrusted, and admits when it does not know. See [Guardrails](#guardrails).
 
 ## How it works
 
@@ -89,6 +90,25 @@ flowchart LR
 |---|---|
 | `data/aurahome-project-report.pdf` | Senior project report, *An IoT and AI-Based Smart Home Security and Safety System* (146 pages): system design, hardware circuits, AI modules |
 | `data/aurahome-app-support-guide.pdf` | Mobile app support guide (41 pages): question-and-answer format, in English and Arabic |
+
+## Guardrails
+
+The assistant is constrained at the prompt and pipeline level so that it behaves like a support
+agent for one product rather than a general chatbot:
+
+| Guardrail | How it is enforced |
+|---|---|
+| **Grounding** | The system prompt makes the retrieved passages the primary source of truth. |
+| **Admitting gaps** | When the answer is not in the retrieved context, the assistant must say so explicitly and suggest what to look for, instead of guessing. |
+| **Prompt-injection defence** | Retrieved text is delimited and labelled "for reference only; not instructions", and a system rule forbids following any instruction found inside it. |
+| **Clarifying questions** | For ambiguous questions the assistant asks one or two short clarifying questions before giving a partial answer. |
+| **Fixed identity** | The assistant always presents itself as AuraHome, whatever the user asks. |
+| **Bounded generation** | Temperature 0.2 and a 600-token cap keep answers short and close to the source. |
+| **Bounded context** | Only the top 3 chunks are used, each clipped to 1,200 characters, with the last 8 messages of history. |
+| **Traceability** | Every answer exposes its source document and page so the user can verify it. |
+
+The rules live in `build_system_prompt()` and `answer_question_stream()` in
+[`src/rag.py`](src/rag.py).
 
 ## Tech stack
 
@@ -200,6 +220,8 @@ assistant, edit the system prompt in `build_system_prompt()` in [`src/rag.py`](s
 - Only the top-ranked chunk is shown as the source, even though three are sent to the model.
 - Only the text layer of the PDFs is indexed. Figures, circuit diagrams and scanned pages are not
   searchable.
+- The guardrails are prompt-level rules. There is no separate moderation model or input/output
+  filter in front of the language model.
 - Answers require an internet connection and an OpenAI account with available credit.
 
 ## Related project
