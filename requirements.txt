@@ -1,0 +1,9 @@
+# Versions taken from the environment the project was developed in (Python 3.10).
+streamlit==1.52.2
+python-dotenv==1.2.1
+langchain-core==1.2.5
+langchain-community==0.4.1
+langchain-openai==1.1.6
+langchain-text-splitters==1.1.0
+faiss-cpu==1.13.2
+pypdf==6.5.0

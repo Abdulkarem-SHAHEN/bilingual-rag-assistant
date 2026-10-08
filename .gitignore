@@ -1,0 +1,21 @@
+# ---- Secrets ----
+.env
+
+# ---- Generated FAISS index (rebuilt on every start) ----
+index_faiss/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+
+# ---- Virtual environments ----
+venv/
+.venv/
+env/
+chatbotenv/
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
